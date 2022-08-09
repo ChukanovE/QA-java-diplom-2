@@ -1,24 +1,14 @@
 package praktikum;
 
-import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
 import java.util.ArrayList;
-
-import static io.restassured.RestAssured.given;
 
 public class CheckGetListTest {
     String jsonCreate;
-
-    @Before
-    public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/";
-    }
+    OrderClient orderClient = new OrderClient();
 
     @After
     public void deleteCreateUser() {
@@ -34,10 +24,8 @@ public class CheckGetListTest {
         String login = Arr.get(0);
         String pass = Arr.get(1);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
-        //System.out.println(jsonCreate);
-        String bearer = sendPostLoginUserAndGetBearer(jsonCreate);
-        Response response = sendGetListOrder(bearer);
-        printResponseBodyToConsole(response);
+        String bearer = orderClient.sendPostLoginUserAndGetBearer(jsonCreate);
+        Response response = orderClient.sendGetListOrder(bearer);
         response.then().assertThat().statusCode(200);
     }
 
@@ -49,30 +37,8 @@ public class CheckGetListTest {
         String login = Arr.get(0);
         String pass = Arr.get(1);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
-        //System.out.println(jsonCreate);
         String bearer = "";
-        Response response = sendGetListOrder(bearer);
-        printResponseBodyToConsole(response);
+        Response response = orderClient.sendGetListOrder(bearer);
         response.then().assertThat().statusCode(401);
-    }
-
-    @Step("Send POST request to api/auth/login")
-    public String sendPostLoginUserAndGetBearer(String json) {
-        BurgerRegisterUser burgerRegisterUser = new BurgerRegisterUser();
-        return burgerRegisterUser.LoginUserAndGetBearer(json);
-    }
-
-    @Step("Send get request to api/orders")
-    public Response sendGetListOrder(String bearer) {
-        Response response = given()
-                .header("Authorization", bearer)
-                .when()
-                .get("api/orders");
-        return response;
-    }
-
-    @Step("Print response body to console")
-    public void printResponseBodyToConsole(Response response) {
-        System.out.println(response.body().asString());
     }
 }

@@ -1,24 +1,14 @@
 package praktikum;
 
-import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
 import java.util.ArrayList;
-
-import static io.restassured.RestAssured.given;
 
 public class LoginUserTest {
     String jsonCreate;
-
-    @Before
-    public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/";
-    }
+    UserClient userClient = new UserClient();
 
     @After
     public void deleteCreateUser() {
@@ -34,9 +24,7 @@ public class LoginUserTest {
         String login = Arr.get(0);
         String pass = Arr.get(1);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
-        System.out.println(jsonCreate);
-        Response response = sendPostLoginUser(jsonCreate);
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostLoginUser(jsonCreate);
         response.then().assertThat().statusCode(200);
     }
 
@@ -49,9 +37,7 @@ public class LoginUserTest {
         String pass = Arr.get(1);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
         String jsonCreateIncorrectLogin = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", "111", pass);
-        System.out.println(jsonCreateIncorrectLogin);
-        Response response = sendPostLoginUser(jsonCreateIncorrectLogin);
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostLoginUser(jsonCreateIncorrectLogin);
         response.then().assertThat().statusCode(401);
     }
 
@@ -64,24 +50,7 @@ public class LoginUserTest {
         String pass = Arr.get(1);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
         String jsonCreateIncorrectLogin = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, "333");
-        System.out.println(jsonCreateIncorrectLogin);
-        Response response = sendPostLoginUser(jsonCreateIncorrectLogin);
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostLoginUser(jsonCreateIncorrectLogin);
         response.then().assertThat().statusCode(401);
-    }
-
-    @Step("Send POST request to api/auth/login")
-    public Response sendPostLoginUser(String json) {
-        Response response = given()
-                .header("Content-type", "application/json")
-                .body(json)
-                .when()
-                .post("api/auth/login");
-        return response;
-    }
-
-    @Step("Print response body to console")
-    public void printResponseBodyToConsole(Response response) {
-        System.out.println(response.body().asString());
     }
 }

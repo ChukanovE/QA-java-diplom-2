@@ -1,28 +1,20 @@
 package praktikum;
 
-import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
 import java.util.ArrayList;
 
 import static org.hamcrest.Matchers.equalTo;
 
 public class CreateUserTest {
     String jsonCreate;
-
-    @Before
-    public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/";
-    }
+    UserClient userClient = new UserClient();
+    BurgerRegisterUser burgerRegisterCourier = new BurgerRegisterUser();
 
     @After
     public void deleteCreateUser() {
-
         DeleteUser deleteUser = new DeleteUser();
         deleteUser.deleteUser(jsonCreate);
     }
@@ -32,9 +24,7 @@ public class CreateUserTest {
     public void checkCreateUser() {
         BurgerRegisterUser burgerRegisterUser = new BurgerRegisterUser();
         jsonCreate = burgerRegisterUser.buildJsonForRegisterNewUser();
-        System.out.println(jsonCreate);
-        Response response = sendPostCreateUser(jsonCreate);
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostCreateUser(jsonCreate);
         response.then().assertThat().body("success", equalTo(true)).statusCode(200);
     }
 
@@ -48,8 +38,7 @@ public class CreateUserTest {
         String name = Arr.get(2);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
         String jsonWithSameLogin = String.format("{\"email\":\"%s@yandex.ru\",\"password\":\"%s\",\"name\":\"%s\"}", login, "pass", name);
-        Response response = sendPostCreateUser(jsonWithSameLogin);
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostCreateUser(jsonWithSameLogin);
         response.then().assertThat().body("message", equalTo("User already exists")).statusCode(403);
     }
 
@@ -63,8 +52,7 @@ public class CreateUserTest {
         String name = Arr.get(2);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
         String jsonWithoutLogin = String.format("{\"password\":\"%s\",\"name\":\"%s\"}", pass, name);
-        Response response = sendPostCreateUser(jsonWithoutLogin);
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostCreateUser(jsonWithoutLogin);
         response.then().assertThat().body("message", equalTo("Email, password and name are required fields")).statusCode(403);
     }
 
@@ -78,8 +66,7 @@ public class CreateUserTest {
         String name = Arr.get(2);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
         String jsonWithoutPass = String.format("{\"email\":\"%s@yandex.ru\",\"name\":\"%s\"}", login, name);
-        Response response = sendPostCreateUser(jsonWithoutPass);
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostCreateUser(jsonWithoutPass);
         response.then().assertThat().body("message", equalTo("Email, password and name are required fields")).statusCode(403);
     }
 
@@ -92,21 +79,7 @@ public class CreateUserTest {
         String pass = Arr.get(1);
         jsonCreate = String.format("{\"email\":\"%s@yandex.ru\", \"password\":\"%s\"}", login, pass);
         String getJsonWithoutName = String.format("{\"email\":\"%s@yandex.ru\",\"password\":\"%s\"}", login, pass);
-        Response response = sendPostCreateUser(getJsonWithoutName);
-
-        printResponseBodyToConsole(response);
+        Response response = userClient.sendPostCreateUser(getJsonWithoutName);
         response.then().assertThat().body("message", equalTo("Email, password and name are required fields")).statusCode(403);
-    }
-
-    @Step("Send POST request to api/auth/register")
-    public Response sendPostCreateUser(String body) {
-        BurgerRegisterUser burgerRegisterUser = new BurgerRegisterUser();
-        Response response = burgerRegisterUser.registerNewUserAndReturnResponse(body);
-        return response;
-    }
-
-    @Step("Print response body to console")
-    public void printResponseBodyToConsole(Response response) {
-        System.out.println(response.body().asString());
     }
 }

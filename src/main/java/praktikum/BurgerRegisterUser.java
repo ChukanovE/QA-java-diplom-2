@@ -1,16 +1,13 @@
 package praktikum;
 
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
-
 import java.util.ArrayList;
 
 import static io.restassured.RestAssured.given;
 
-public class BurgerRegisterUser {
+public class BurgerRegisterUser extends BaseCleint{
     public ArrayList<String> registerNewUserAndReturnLoginPassword() {
-
         String userLogin = RandomStringUtils.randomAlphabetic(15);
         String userPassword = RandomStringUtils.randomAlphabetic(10);
         String userName = RandomStringUtils.randomAlphabetic(10);
@@ -22,6 +19,7 @@ public class BurgerRegisterUser {
                 + "\"name\":\"" + userName + "\"}";
 
         Response response = given()
+                .spec(getBaseSpec())
                 .header("Content-type", "application/json")
                 .and()
                 .body(registerRequestBody)
@@ -38,7 +36,6 @@ public class BurgerRegisterUser {
     }
 
     public String buildJsonForRegisterNewUser() {
-
         String userLogin = RandomStringUtils.randomAlphabetic(15);
         String userPassword = RandomStringUtils.randomAlphabetic(10);
         String userName = RandomStringUtils.randomAlphabetic(10);
@@ -52,6 +49,7 @@ public class BurgerRegisterUser {
 
     public Response registerNewUserAndReturnResponse (String body) {
         Response response = given()
+                .spec(getBaseSpec())
                 .header("Content-type", "application/json")
                 .body(body)
                 .when()
@@ -61,6 +59,7 @@ public class BurgerRegisterUser {
 
     public String LoginUserAndGetBearer(String json){
         Response response = given()
+                .spec(getBaseSpec())
                 .header("Content-type", "application/json")
                 .body(json)
                 .when()
